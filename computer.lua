@@ -130,117 +130,123 @@ local function on_receive_fields (pos, formname, fields, sender)
 
 	else
 		for k, v in pairs (fields) do
-			local key = lwcomp.keys[k]
+      local meta = minetest.get_meta (pos)
+      
+      if meta then
+        local id = meta:get_int ("lwcomputer_id")
+        local data = lwcomp.get_computer_data (id, pos)
+        
+        if data then
+          data.id = id
+          
+          if fields.key_enter_field == "kbinput" then
+            fields.key_enter_field = ""
+            for i = 1, #fields.kbinput do
+              local c = fields.kbinput:sub(i,i)
+              local n = string.byte(c)
+              data.queue_event ("char", string.char(n), n)
+            end
+            data.queue_event ("char", string.char (13), 13)
+          end
+          
+          local key = lwcomp.keys[k]
+          
+          if key then
+            if k == "KEY_SHIFT" then
+              if data.shift and
+                not data.shift_locked and
+                (os.clock () - data.shift_when) <= lwcomp.settings.double_click_time then
 
-			if key then
-				local meta = minetest.get_meta (pos)
+                data.shift_locked = true
+              else
+                data.shift = not data.shift
+                data.update_formspec ()
+                data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
 
-				if meta then
-					local id = meta:get_int ("lwcomputer_id")
-					local data = lwcomp.get_computer_data (id, pos)
+                data.shift_locked = false
 
-					if data then
-						data.id = id
+                if data.shift then
+                  data.shift_when = os.clock ()
+                end
+              end
 
-						if k == "KEY_SHIFT" then
-							if data.shift and
-								not data.shift_locked and
-								(os.clock () - data.shift_when) <= lwcomp.settings.double_click_time then
+            elseif k == "KEY_CAPS" then
+              data.caps = not data.caps
+              data.update_formspec ()
+              data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
 
-								data.shift_locked = true
-							else
-								data.shift = not data.shift
-								data.update_formspec ()
-								data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
+            elseif k == "KEY_CTRL" then
+              data.ctrl = not data.ctrl
+              data.update_formspec ()
+              data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
 
-								data.shift_locked = false
+            elseif k == "KEY_ALT" then
+              data.alt = not data.alt
+              data.update_formspec ()
+              data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
 
-								if data.shift then
-									data.shift_when = os.clock ()
-								end
-							end
+            else
+              if k == "KEY_V" and data.ctrl and data.alt then
+                local contents = data.get_clipboard_contends ()
 
-						elseif k == "KEY_CAPS" then
-							data.caps = not data.caps
-							data.update_formspec ()
-							data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
+                if contents then
+                  data.queue_event ("clipboard", contents)
 
-						elseif k == "KEY_CTRL" then
-							data.ctrl = not data.ctrl
-							data.update_formspec ()
-							data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
+                  return
+                end
+              end
 
-						elseif k == "KEY_ALT" then
-							data.alt = not data.alt
-							data.update_formspec ()
-							data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
+              data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
 
-						else
+              if not data.ctrl and not data.alt then
+                local char = key
 
-							if k == "KEY_V" and data.ctrl and data.alt then
-								local contents = data.get_clipboard_contends ()
+                if char < lwcomp.keys.KEY_DELETE then
+                  if char >= lwcomp.keys.KEY_A and char <= lwcomp.keys.KEY_Z then
+                    if (data.caps and data.shift) or (not data.caps and not data.shift) then
+                      -- to lower
+                      char = char + 32
+                    end
+                  else
+                    char = (data.shift and lwcomp.shift_keys[k]) or key
+                  end
 
-								if contents then
-									data.queue_event ("clipboard", contents)
+                  data.queue_event ("char", string.char (char), char)
 
-									return
-								end
-							end
+                  if data.shift and not data.shift_locked then
+                    data.shift = false
+                    data.update_formspec ()
+                  end
+                end
+              end
+            end
+          else
+            local click = lwcomp.click_buttons[k]
 
-							data.queue_event ("key", key, data.ctrl, data.alt, data.shift)
+            if click then
+              local meta = minetest.get_meta (pos)
 
-							if not data.ctrl and not data.alt then
-								local char = key
+              if meta then
+                local id = meta:get_int ("lwcomputer_id")
+                local data = lwcomp.get_computer_data (id, pos)
+                local count = 1
 
-								if char < lwcomp.keys.KEY_DELETE then
-									if char >= lwcomp.keys.KEY_A and char <= lwcomp.keys.KEY_Z then
-										if (data.caps and data.shift) or (not data.caps and not data.shift) then
-											-- to lower
-											char = char + 32
-										end
-									else
-										char = (data.shift and lwcomp.shift_keys[k]) or key
-									end
+                if (os.clock () - data.clicked_when) <= lwcomp.settings.double_click_time then
+                  if data.clicked.x == click.x and data.clicked.y == click.y then
+                    count = data.click_count + 1
+                  end
+                end
 
-									data.queue_event ("char", string.char (char), char)
+                data.clicked_when = os.clock ()
+                data.clicked = { x = click.x, y = click.y }
+                data.click_count = count
 
-									if data.shift and not data.shift_locked then
-										data.shift = false
-										data.update_formspec ()
-									end
-								end
-							end
-
-						end
-					end
-				end
-
-			else
-				local click = lwcomp.click_buttons[k]
-
-				if click then
-					local meta = minetest.get_meta (pos)
-
-					if meta then
-						local id = meta:get_int ("lwcomputer_id")
-						local data = lwcomp.get_computer_data (id, pos)
-						local count = 1
-
-						if (os.clock () - data.clicked_when) <= lwcomp.settings.double_click_time then
-							if data.clicked.x == click.x and data.clicked.y == click.y then
-								count = data.click_count + 1
-							end
-						end
-
-						data.clicked_when = os.clock ()
-						data.clicked = { x = click.x, y = click.y }
-						data.click_count = count
-
-						data.queue_event ("click", click.x, click.y, count)
-					end
-				end
-			end
-
+                data.queue_event ("click", click.x, click.y, count)
+              end
+            end
+          end
+        end
+      end
 		end
 	end
 end

@@ -234,8 +234,11 @@ function lwcomp.term_formspec (data)
 	kby = kby + 0.7
 	btns = btns.."button[0.5,"..tostring (kby)..";1.05,0.7;KEY_CTRL;"..ctrl_lbl.."]"..
 					 "button[1.55,"..tostring (kby)..";1.05,0.7;KEY_ALT;"..alt_lbl.."]"
+           
+  kbi = "field[6.0,0.0;6.0,0.5;kbinput;;]" .. 
+        "field_close_on_enter[kbinput;false]"
 
-	return string.format ("%s%s%s%s", form_header, display, form_footer, btns)
+	return string.format ("%s%s%s%s%s", form_header, display, form_footer, btns, kbi)
 end
 
 
