@@ -2908,7 +2908,7 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 			inv_storage[i] = inv:get_stack ("storage", i)
 		end
 
-    local owner = meta:get_string ("owner")
+		local owner = meta:get_string ("owner")
 		local id = meta:get_int ("lwcomputer_id")
 		local running = meta:get_int ("running")
 		local persists = meta:get_int ("persists")
@@ -2945,7 +2945,7 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 		inv:set_size ("storage", 32)
 		inv:set_width ("storage", 8)
 
-    meta:set_string ("owner", owner)
+		meta:set_string ("owner", owner)
 		meta:set_int ("lwcomputer_id", id)
 		meta:set_int ("running", running)
 		meta:set_int ("robot", 1)
@@ -3023,7 +3023,7 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 		local nodedef = minetest.registered_nodes[node.name]
 
 		if not nodedef or not nodedef.diggable or 
-      minetest.is_protected (pos, meta:get_string("owner")) or
+			minetest.is_protected (pos, meta:get_string("owner")) or
 			minetest.get_item_group (node.name, "unbreakable") > 0 then
 			return nil
 		end
