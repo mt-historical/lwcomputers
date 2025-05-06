@@ -2866,12 +2866,8 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 		if not pos then
 			return false
 		end
-
-		local in_owned_area = not minetest.is_protected(pos, meta:get_string("owner"))
-		local in_protected_area = minetest.is_protected (pos, "")
-		local denied = not in_owned_area and in_protected_area
 		
-		if denied then
+		if minetest.is_protected (pos, meta:get_string("owner")) then
 			return false
 		end
 
@@ -3026,11 +3022,8 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 
 		local nodedef = minetest.registered_nodes[node.name]
 
-		local in_owned_area = not minetest.is_protected(pos, meta:get_string("owner"))
-		local in_protected_area = minetest.is_protected (pos, "")
-		local denied = not in_owned_area and in_protected_area
-
-		if not nodedef or not nodedef.diggable or denied or
+		if not nodedef or not nodedef.diggable or 
+      minetest.is_protected (pos, meta:get_string("owner")) or
 			minetest.get_item_group (node.name, "unbreakable") > 0 then
 			return nil
 		end
@@ -3146,11 +3139,7 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 			end
 		end
 
-		local in_owned_area = not minetest.is_protected (place_pos, meta:get_string("owner"))
-		local in_protected_area = minetest.is_protected (place_pos, "")
-		local denied = not in_owned_area and in_protected_area
-
-		if denied then
+		if minetest.is_protected (place_pos, meta:get_string("owner")) then
 			return false
 		end
 
@@ -3177,7 +3166,7 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 			pointed_thing.above = place_pos
 		end
 
-		if lwcomp.settings.use_mod_on_place and not in_protected_area then
+		if lwcomp.settings.use_mod_on_place and not minetest.is_protected (place_pos, "") then
 			if def and def.on_place then
 				local result, leftover = pcall (def.on_place, stack, nil, pointed_thing)
 
@@ -3333,12 +3322,8 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 		if not pos then
 			return false
 		end
-
-		local in_owned_area = not minetest.is_protected(pos, meta:get_string("owner"))
-		local in_protected_area = minetest.is_protected (pos, "")
-		local denied = not in_owned_area and in_protected_area
 		
-		if denied then
+		if minetest.is_protected (pos, meta:get_string("owner")) then
 			return false
 		end
 
@@ -3436,12 +3421,8 @@ function lwcomp.new_computer (computer_pos, computer_id, computer_persists, robo
 		if not pos then
 			return false
 		end
-
-		local in_owned_area = not minetest.is_protected(pos, meta:get_string("owner"))
-		local in_protected_area = minetest.is_protected (pos, "")
-		local denied = not in_owned_area and in_protected_area
 		
-		if denied then
+		if minetest.is_protected (pos, meta:get_string("owner")) then
 			return false
 		end
 
