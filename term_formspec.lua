@@ -30,7 +30,7 @@ end
 -- builds static formspec components
 local function build_form_constants ()
 	local fw = (lwcomp.settings.term_hres * hscale) + 1.0
-	local fh = (lwcomp.settings.term_vres * vscale) + 5.25
+	local fh = (lwcomp.settings.term_vres * vscale) + 5.65
 
 	form_header =
 	string.format ("formspec_version[3]"..
@@ -234,8 +234,9 @@ function lwcomp.term_formspec (data)
 	kby = kby + 0.7
 	btns = btns.."button[0.5,"..tostring (kby)..";1.05,0.7;KEY_CTRL;"..ctrl_lbl.."]"..
 					 "button[1.55,"..tostring (kby)..";1.05,0.7;KEY_ALT;"..alt_lbl.."]"
-           
-  kbi = "field[6.0,0.0;6.0,0.5;kbinput;;]" .. 
+       
+	kby = kby + 0.8
+	kbi = "field[3.2,"..tostring (kby)..";6.0,0.5;kbinput;;]" .. 
         "field_close_on_enter[kbinput;false]"
 
 	return string.format ("%s%s%s%s%s", form_header, display, form_footer, btns, kbi)
